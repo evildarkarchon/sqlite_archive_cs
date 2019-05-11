@@ -9,7 +9,7 @@
 
 namespace sqlite_archive_cs
 {
-    class Program
+    class SQLite_Archive
     {
         static void Main(string[] args)
         {
