@@ -4,22 +4,27 @@ using System.Security.Cryptography;
 namespace sqlite_archive_cs
 {
     public class Hash {
-        private readonly SHA256 Sha256 = SHA256.Create();
-        private readonly SHA512 Sha512 = SHA512.Create();
 
-        public byte[] GetHashSha256(string filename)
+        public string GetHashSha256(string filename)
         {
             using (FileStream stream = File.OpenRead(filename))
             {
-                return Sha256.ComputeHash(stream);
+                using (SHA256 Sha256 = SHA256.Create())
+                {
+                    string output = Sha256.ComputeHash(stream).ToString();
+                    return output;
+                }
             }
         }
 
-        public byte[] GetHashSha512(string filename)
+        public string GetHashSha512(string filename)
         {
             using (FileStream stream = File.OpenRead(filename))
             {
-                return Sha512.ComputeHash(stream);
+                using (SHA512 Sha512 = SHA512.Create()) {
+                    string output = Sha512.ComputeHash(stream).ToString();
+                    return output;
+                }
             }
         }
     }
