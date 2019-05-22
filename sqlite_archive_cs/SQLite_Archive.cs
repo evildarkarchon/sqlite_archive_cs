@@ -18,7 +18,7 @@ namespace sqlite_archive_cs
             string connectionstring = result.MapResult(options => $"Data Source={options.DB};Version=3;New=True;", _ => default);
             SQLiteConnection connection;
             SQLiteCommand cmd;
-            if (connectionstring != default)
+            if (connectionstring != default || string.IsNullOrEmpty(connectionstring))
             {
                 connection = new SQLiteConnection(connectionstring);
                 connection.Open();
