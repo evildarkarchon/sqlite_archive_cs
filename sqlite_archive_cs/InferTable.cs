@@ -1,7 +1,7 @@
 ﻿using System.IO;
 namespace sqlite_archive_cs
 {
-    public class Table
+    public class InferTable
     {
         public string Clear(ref string input)
         {
