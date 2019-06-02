@@ -6,7 +6,7 @@ using System.Data.SQLite;
 
 namespace sqlite_archive_cs
 {
-    class DB
+    public abstract class AbsDB
     {
         
     }
