@@ -6,7 +6,19 @@ namespace sqlite_archive_cs
     public class FileInfo
     {
         public string Name { get; set; }
-        public byte[] Data { get; set; }
+
+        private byte[] data;
+
+        public byte[] GetData()
+        {
+            return data;
+        }
+
+        public void SetData(byte[] value)
+        {
+            data = value;
+        }
+
         public string Digest { get; set; }
 
         public FileInfo() : base() { }
@@ -17,16 +29,31 @@ namespace sqlite_archive_cs
             {
                 Name = Path.GetFullPath(Name);
             }
-            bool? _isdirfile = IsDirOrFile(Name);
+
+            var _isdirfile = IsDirOrFile(Name);
+            /*
             if (_isdirfile == false)
             {
                 Data = File.ReadAllBytes(Name);
             }
             else if (_isdirfile == null)
             {
-                new FileNotFoundException("Could not find the file:", Name);
+                throw new FileNotFoundException("Could not find the file:", Name);
             }
-            if (Data.Length >= 1)
+            */
+
+            switch(_isdirfile)
+            {
+                case true:
+                    throw new InvalidDataException($"{filename} pointed to a directory.");
+                case false:
+                    SetData(File.ReadAllBytes(Name));
+                    break;
+                case null:
+                    throw new FileNotFoundException($"{filename} could not be found.");
+            }
+
+            if (GetData().Length >= 1)
             {
                 Digest = GetHashSha512(Name);
             }
@@ -39,9 +66,9 @@ namespace sqlite_archive_cs
             {
                 Name = Path.GetFullPath(Name);
             }
-            Data = filedata;
+            SetData(filedata);
 
-            if (Data.Length >= 1)
+            if (GetData().Length >= 1)
             {
                 Digest = GetHashSha512(Name);
             }
@@ -54,7 +81,7 @@ namespace sqlite_archive_cs
             {
                 Name = Path.GetFullPath(Name);
             }
-            Data = filedata;
+            SetData(filedata);
             Digest = filedigest;
         }
 
