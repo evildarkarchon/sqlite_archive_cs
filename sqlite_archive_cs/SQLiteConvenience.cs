@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+//using System.Text;
 using System.Data.SQLite;
 
 namespace sqlite_archive_cs
@@ -8,10 +8,10 @@ namespace sqlite_archive_cs
     public abstract class SQLiteConvenienceAbstract
     {
         public abstract void Compact();
-        public abstract void InsertFilesNoAtomic(string table, FileInfo fileinfo, bool replace, bool verbose);
-        public abstract void InsertFilesNoAtomic(string table, List<string> files, bool replace, bool verbose);
-        public abstract void InsertFilesAtomic(string table, FileInfo fileinfo, bool replace, bool verbose);
-        public abstract void InsertFilesAtomic(string table, List<string> files, bool replace, bool verbose);
+        public abstract void InsertFilesNoAtomic(string table, FileInfo fileinfo, bool replace, bool verbose, bool replacenovacuum);
+        public abstract void InsertFilesNoAtomic(string table, List<string> files, bool replace, bool verbose, bool replacenovacuum);
+        public abstract void InsertFilesAtomic(string table, FileInfo fileinfo, bool replace, bool verbose, bool replacenovacuum);
+        public abstract void InsertFilesAtomic(string table, List<string> files, bool replace, bool verbose, bool replacenovacuum);
     }
     public class SQLiteConvenience : SQLiteConvenienceAbstract
     {
@@ -199,14 +199,18 @@ namespace sqlite_archive_cs
 
         public override void Compact()
         {
+            Console.Out.NewLine = " ";
+            Console.WriteLine("Compacting the database, this might take a while...");
             using (SQLiteCommand cmd = new SQLiteCommand(_connection))
             {
                 cmd.CommandText = "VACUUM;";
                 cmd.ExecuteNonQuery();
             }
+            Console.Out.NewLine = Environment.NewLine;
+            Console.WriteLine("done.");
         }
 
-        public override void InsertFilesNoAtomic(string table, FileInfo fileinfo, bool replace, bool verbose)
+        public override void InsertFilesNoAtomic(string table, FileInfo fileinfo, bool replace, bool verbose, bool replacenovacuum)
         {
             string query;
             if (replace)
@@ -225,8 +229,13 @@ namespace sqlite_archive_cs
                 cmd.Parameters.AddWithValue("@hash", fileinfo.Digest);
                 cmd.ExecuteNonQuery();
             }
+
+            if (!replacenovacuum && replace)
+            {
+                Compact();
+            }
         }
-        public override void InsertFilesNoAtomic(string table, List<string> files, bool replace, bool verbose)
+        public override void InsertFilesNoAtomic(string table, List<string> files, bool replace, bool verbose, bool replacenovacuum)
         {
             foreach (string value in files)
             {
@@ -248,14 +257,19 @@ namespace sqlite_archive_cs
                     cmd.Parameters.AddWithValue("@hash", fileinfo.Digest);
                     cmd.ExecuteNonQuery();
                 }
+
+                if (!replacenovacuum && replace)
+                {
+                    Compact();
+                }
             }
         }
 
-        public override void InsertFilesAtomic(string table, FileInfo fileinfo, bool replace, bool verbose)
+        public override void InsertFilesAtomic(string table, FileInfo fileinfo, bool replace, bool verbose, bool replacenovacuum)
         {
-            throw new NotImplementedException();
+            InsertFilesNoAtomic(table, fileinfo, replace, verbose, replacenovacuum);
         }
-        public override void InsertFilesAtomic(string table, List<string> files, bool replace, bool verbose)
+        public override void InsertFilesAtomic(string table, List<string> files, bool replace, bool verbose, bool replacevacuum)
         {
             throw new NotImplementedException();
         }
