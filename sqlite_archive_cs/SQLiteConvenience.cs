@@ -15,7 +15,18 @@ namespace sqlite_archive_cs
     }
     public class SQLiteConvenience : SQLiteConvenienceAbstract
     {
-        private readonly SQLiteConnection _connection;
+        private readonly SQLiteConnection connection;
+
+        public SQLiteConnection GetConnection() => connection;
+
+        private int GetAutoVacuum()
+        {
+            using (SQLiteCommand cmd = new SQLiteCommand(GetConnection()))
+            {
+                cmd.CommandText = "PRAGMA auto_vacuum;";
+                return int.Parse(cmd.ExecuteScalar().ToString());
+            }
+        }
         public SQLiteConvenience(string filename, bool wal, int autovacuum, bool verbose)
         {
             SQLiteConnectionStringBuilder constring = new SQLiteConnectionStringBuilder
@@ -34,20 +45,22 @@ namespace sqlite_archive_cs
                 constring.JournalMode = SQLiteJournalModeEnum.Delete;
             }
             */
-
+            bool is_network_path = Utility.IsNetworkPath(filename);
             switch (wal)
             {
-                case true:
+
+                case true when is_network_path == false:
                     constring.JournalMode = SQLiteJournalModeEnum.Wal;
                     break;
+                case true when is_network_path == true:
                 case false:
                 default:
                     constring.JournalMode = SQLiteJournalModeEnum.Delete;
                     break;
             }
 
-            SQLiteConnection _connection = new SQLiteConnection(constring.ToString());
-            _connection.Open();
+            connection = new SQLiteConnection(constring.ToString());
+            connection.Open();
 
             List<string> AutoVacuumStatus = new List<string>
             {
@@ -56,7 +69,7 @@ namespace sqlite_archive_cs
                 "AutoVacuum set to incremental."
             };
 
-            using (SQLiteCommand cmd = new SQLiteCommand(_connection))
+            using (SQLiteCommand cmd = new SQLiteCommand(GetConnection()))
             {
                 /*
                 if (autovacuum == 0)
@@ -76,34 +89,52 @@ namespace sqlite_archive_cs
                     cmd.CommandText = "PRAGMA auto_vacuum = 1";
                 }
                 */
+                int AutoVacuum = GetAutoVacuum();
+                int NewAutoVacuum = default;
 
                 switch (autovacuum)
                 {
-                    case 0:
+                    case 0 when AutoVacuum != 0:
                         cmd.CommandText = "PRAGMA auto_vacuum = 0;";
-                        if (verbose == true)
+                        cmd.ExecuteNonQuery();
+                        NewAutoVacuum = GetAutoVacuum();
+                        if (verbose && NewAutoVacuum == 0)
                         {
                             Console.WriteLine(AutoVacuumStatus[0]);
                         }
                         break;
-                    case 1:
-                    default:
+                    case 1 when AutoVacuum != 1:
                         cmd.CommandText = "PRAGMA auto_vacuum = 1;";
-                        if (verbose == true)
+                        cmd.ExecuteNonQuery();
+                        NewAutoVacuum = GetAutoVacuum();
+                        if (verbose && NewAutoVacuum == 1)
                         {
                             Console.WriteLine(AutoVacuumStatus[1]);
                         }
                         break;
-                    case 2:
+                    case 2 when AutoVacuum != 2:
                         cmd.CommandText = "PRAGMA auto_vacuum = 2;";
-                        if (verbose == true)
+                        cmd.ExecuteNonQuery();
+                        NewAutoVacuum = GetAutoVacuum();
+                        if (verbose && NewAutoVacuum == 2)
                         {
                             Console.WriteLine(AutoVacuumStatus[2]);
                         }
                         break;
-                }
+                    default:
+                        if (AutoVacuum != 1)
+                        {
+                            cmd.CommandText = "PRAGMA auto_vacuum = 1;";
+                            cmd.ExecuteNonQuery();
 
-                cmd.ExecuteNonQuery();
+                            NewAutoVacuum = GetAutoVacuum();
+                            if (verbose && NewAutoVacuum == 1)
+                            {
+                                Console.WriteLine(AutoVacuumStatus[1]);
+                            }
+                        }
+                        break;
+                }
             }
         }
 
@@ -115,8 +146,8 @@ namespace sqlite_archive_cs
                 FailIfMissing = false,
                 ReadOnly = false
             };
-            SQLiteConnection _connection = new SQLiteConnection(constring.ToString());
-            _connection.Open();
+            connection = new SQLiteConnection(constring.ToString());
+            connection.Open();
 
             List<string> AutoVacuumStatus = new List<string>
             {
@@ -125,7 +156,7 @@ namespace sqlite_archive_cs
                 "AutoVacuum set to incremental."
             };
 
-            using (SQLiteCommand cmd = new SQLiteCommand(_connection))
+            using (SQLiteCommand cmd = new SQLiteCommand(GetConnection()))
             {
                 /*
                 if (autovacuum == 0)
@@ -146,36 +177,49 @@ namespace sqlite_archive_cs
                 }
                 */
 
+                int AutoVacuum = GetAutoVacuum();
+                int NewAutoVacuum = default;
+
                 switch (autovacuum)
                 {
                     case 0:
-                        cmd.CommandText = "PRAGMA auto_vacuum = 0;";
-
-                        if (verbose)
+                        if (AutoVacuum != 0)
+                        {
+                            cmd.CommandText = "PRAGMA auto_vacuum = 0;";
+                            cmd.ExecuteNonQuery();
+                        }
+                        NewAutoVacuum = GetAutoVacuum();
+                        if (verbose && NewAutoVacuum == 0)
                         {
                             Console.WriteLine(AutoVacuumStatus[0]);
                         }
                         break;
                     case 1:
                     default:
-                        cmd.CommandText = "PRAGMA auto_vacuum = 1;";
-
-                        if (verbose)
+                        if (AutoVacuum != 1)
+                        {
+                            cmd.CommandText = "PRAGMA auto_vacuum = 1;";
+                            cmd.ExecuteNonQuery();
+                        }
+                        NewAutoVacuum = GetAutoVacuum();
+                        if (verbose && NewAutoVacuum == 1)
                         {
                             Console.WriteLine(AutoVacuumStatus[1]);
                         }
                         break;
                     case 2:
-                        cmd.CommandText = "PRAGMA auto_vacuum = 2;";
-
-                        if (verbose)
+                        if (AutoVacuum != 2)
+                        {
+                            cmd.CommandText = "PRAGMA auto_vacuum = 2;";
+                            cmd.ExecuteNonQuery();
+                        }
+                        NewAutoVacuum = GetAutoVacuum();
+                        if (verbose && NewAutoVacuum == 2)
                         {
                             Console.WriteLine(AutoVacuumStatus[2]);
                         }
                         break;
                 }
-
-                cmd.ExecuteNonQuery();
             }
         }
 
@@ -187,13 +231,16 @@ namespace sqlite_archive_cs
                 FailIfMissing = false,
                 ReadOnly = false
             };
-            SQLiteConnection _connection = new SQLiteConnection(constring.ToString());
-            _connection.Open();
+            connection = new SQLiteConnection(constring.ToString());
+            connection.Open();
 
-            using (SQLiteCommand cmd = new SQLiteCommand(_connection))
+            using (SQLiteCommand cmd = new SQLiteCommand(GetConnection()))
             {
-                cmd.CommandText = "PRAGMA auto_vacuum = 1";
-                cmd.ExecuteNonQuery();
+                if (GetAutoVacuum() != 1)
+                {
+                    cmd.CommandText = "PRAGMA auto_vacuum = 1";
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 
@@ -201,7 +248,7 @@ namespace sqlite_archive_cs
         {
             Console.Out.NewLine = " ";
             Console.WriteLine("Compacting the database, this might take a while...");
-            using (SQLiteCommand cmd = new SQLiteCommand(_connection))
+            using (SQLiteCommand cmd = new SQLiteCommand(GetConnection()))
             {
                 cmd.CommandText = "VACUUM;";
                 cmd.ExecuteNonQuery();
@@ -221,8 +268,8 @@ namespace sqlite_archive_cs
             {
                 query = $"INSERT INTO {table} ([filename], [data], [hash]) VALUES (@filename, @data, @hash)";
             }
-            
-            using (SQLiteCommand cmd = new SQLiteCommand(query, _connection))
+
+            using (SQLiteCommand cmd = new SQLiteCommand(query, GetConnection()))
             {
                 cmd.Parameters.AddWithValue("@filename", fileinfo.Name);
                 cmd.Parameters.AddWithValue("@data", fileinfo.GetData());
@@ -250,7 +297,7 @@ namespace sqlite_archive_cs
                     query = $"INSERT INTO {table} ([filename], [data], [hash] VALUES (@filename, @data, @hash)";
                 }
 
-                using (SQLiteCommand cmd = new SQLiteCommand(query, _connection))
+                using (SQLiteCommand cmd = new SQLiteCommand(query, GetConnection()))
                 {
                     cmd.Parameters.AddWithValue("@filename", fileinfo.Name);
                     cmd.Parameters.AddWithValue("@data", fileinfo.GetData());
@@ -265,11 +312,8 @@ namespace sqlite_archive_cs
             }
         }
 
-        public override void InsertFilesAtomic(string table, FileInfo fileinfo, bool replace, bool verbose, bool replacenovacuum)
-        {
-            InsertFilesNoAtomic(table, fileinfo, replace, verbose, replacenovacuum);
-        }
-        public override void InsertFilesAtomic(string table, List<string> files, bool replace, bool verbose, bool replacevacuum)
+        public override void InsertFilesAtomic(string table, FileInfo fileinfo, bool replace, bool verbose, bool replacenovacuum) => InsertFilesNoAtomic(table, fileinfo, replace, verbose, replacenovacuum);
+        public override void InsertFilesAtomic(string table, List<string> files, bool replace, bool verbose, bool replacenovacuum)
         {
             throw new NotImplementedException();
         }
