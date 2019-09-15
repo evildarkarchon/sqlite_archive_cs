@@ -35,17 +35,7 @@ namespace sqlite_archive_cs
                 FailIfMissing = false,
                 ReadOnly = false
             };
-            /*
-            if (wal)
-            {
-                constring.JournalMode = SQLiteJournalModeEnum.Wal;
-            }
-            else
-            {
-                constring.JournalMode = SQLiteJournalModeEnum.Delete;
-            }
-            */
-            bool is_network_path = Utility.IsNetworkPath(filename);
+            var is_network_path = Utility.IsNetworkPath(filename);
             switch (wal)
             {
 
@@ -71,25 +61,7 @@ namespace sqlite_archive_cs
 
             using (SQLiteCommand cmd = new SQLiteCommand(GetConnection()))
             {
-                /*
-                if (autovacuum == 0)
-                {
-                    cmd.CommandText = "PRAGMA auto_vacuum = 0";
-                }
-                else if (autovacuum == 1 || autovacuum > 2)
-                {
-                    cmd.CommandText = "PRAGMA auto_vacuum = 1";
-                }
-                else if (autovacuum == 2)
-                {
-                    cmd.CommandText = "PRAGMA auto_vacuum = 2";
-                }
-                else
-                {
-                    cmd.CommandText = "PRAGMA auto_vacuum = 1";
-                }
-                */
-                int AutoVacuum = GetAutoVacuum();
+                var AutoVacuum = GetAutoVacuum();
                 int NewAutoVacuum = default;
 
                 switch (autovacuum)
@@ -158,26 +130,7 @@ namespace sqlite_archive_cs
 
             using (SQLiteCommand cmd = new SQLiteCommand(GetConnection()))
             {
-                /*
-                if (autovacuum == 0)
-                {
-                    cmd.CommandText = "PRAGMA auto_vacuum = 0";
-                }
-                else if (autovacuum == 1 || autovacuum > 2)
-                {
-                    cmd.CommandText = "PRAGMA auto_vacuum = 1";
-                }
-                else if (autovacuum == 2)
-                {
-                    cmd.CommandText = "PRAGMA auto_vacuum = 2";
-                }
-                else
-                {
-                    cmd.CommandText = "PRAGMA auto_vacuum = 1";
-                }
-                */
-
-                int AutoVacuum = GetAutoVacuum();
+                var AutoVacuum = GetAutoVacuum();
                 int NewAutoVacuum = default;
 
                 switch (autovacuum)
