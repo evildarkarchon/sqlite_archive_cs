@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Security.Cryptography;
 
 namespace sqlite_archive_cs
 {
@@ -30,7 +29,7 @@ namespace sqlite_archive_cs
                 Name = Path.GetFullPath(Name);
             }
 
-            var _isdirfile = IsDirOrFile(Name);
+            var _isdirfile = Utility.IsDirOrFile(Name);
             /*
             if (_isdirfile == false)
             {
@@ -55,7 +54,7 @@ namespace sqlite_archive_cs
 
             if (GetData().Length >= 1)
             {
-                Digest = GetHashSha512(Name);
+                Digest = Utility.GetHash(Name);
             }
         }
 
@@ -70,7 +69,7 @@ namespace sqlite_archive_cs
 
             if (GetData().Length >= 1)
             {
-                Digest = GetHashSha512(Name);
+                Digest = Utility.GetHash(Name);
             }
         }
 
@@ -83,43 +82,6 @@ namespace sqlite_archive_cs
             }
             SetData(filedata);
             Digest = filedigest;
-        }
-
-        public static bool? IsDirOrFile(string path)
-        {
-            // Returns true if the path is a dir, false if it's a file and null if it's neither or doesn't exist.
-            bool? result = null;
-            if (Directory.Exists(path) || File.Exists(path))
-            { // get the file attributes for file or directory
-                var fileAttr = File.GetAttributes(path);
-                if (fileAttr.HasFlag(FileAttributes.Directory)) result = true;
-                else result = false;
-            }
-            return result;
-        }
-        
-        /*public static string GetHashSha256(string filename)
-        {
-            using (FileStream stream = File.OpenRead(filename))
-            {
-                using (SHA256 Sha256 = SHA256.Create())
-                {
-                    string output = Sha256.ComputeHash(stream).ToString();
-                    return output;
-                }
-            }
-        }*/
-
-        public static string GetHashSha512(string filename)
-        {
-            using (FileStream stream = File.OpenRead(filename))
-            {
-                using (SHA512 Sha512 = SHA512.Create())
-                {
-                    string output = Sha512.ComputeHash(stream).ToString();
-                    return output;
-                }
-            }
         }
     }
 }
