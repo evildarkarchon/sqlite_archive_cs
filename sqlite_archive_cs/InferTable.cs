@@ -39,7 +39,7 @@ namespace sqlite_archive_cs
         public override string InferTableAdd(ref List<string> files, bool lower)
         {
             string f = default;
-            var _dirorfile = FileInfo.IsDirOrFile(files[0]);
+            var _dirorfile = Utility.IsDirOrFile(files[0]);
             /*
             if (!_dirorfile)
             {
@@ -87,7 +87,7 @@ namespace sqlite_archive_cs
         public override string InferTableAdd(ref List<string> files)
         {
             string f = default;
-            var _dirorfile = FileInfo.IsDirOrFile(files[0]);
+            var _dirorfile = Utility.IsDirOrFile(files[0]);
             /*
             if (!_dirorfile)
             {
