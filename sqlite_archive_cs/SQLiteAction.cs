@@ -5,7 +5,7 @@ using System.Data.SQLite;
 
 namespace sqlite_archive_cs
 {
-    public abstract class SQLiteConvenienceAbstract
+    public abstract class SQLiteActionAbstract
     {
         public abstract void Compact();
         public abstract void InsertFilesNoAtomic(string table, FileInfo fileinfo, bool replace, bool verbose, bool replacenovacuum);
@@ -13,7 +13,7 @@ namespace sqlite_archive_cs
         public abstract void InsertFilesAtomic(string table, FileInfo fileinfo, bool replace, bool verbose, bool replacenovacuum);
         public abstract void InsertFilesAtomic(string table, List<string> files, bool replace, bool verbose, bool replacenovacuum);
     }
-    public class SQLiteConvenience : SQLiteConvenienceAbstract
+    public class SQLiteConvenience : SQLiteActionAbstract
     {
         private readonly SQLiteConnection connection;
 
@@ -62,7 +62,7 @@ namespace sqlite_archive_cs
             using (SQLiteCommand cmd = new SQLiteCommand(GetConnection()))
             {
                 var AutoVacuum = GetAutoVacuum();
-                int NewAutoVacuum = default;
+                int NewAutoVacuum;
 
                 switch (autovacuum)
                 {
@@ -131,7 +131,7 @@ namespace sqlite_archive_cs
             using (SQLiteCommand cmd = new SQLiteCommand(GetConnection()))
             {
                 var AutoVacuum = GetAutoVacuum();
-                int NewAutoVacuum = default;
+                int NewAutoVacuum;
 
                 switch (autovacuum)
                 {
@@ -176,7 +176,7 @@ namespace sqlite_archive_cs
             }
         }
 
-        public SQLiteConvenience(string filename)
+        public SQLiteConvenience(string filename, bool verbose)
         {
             SQLiteConnectionStringBuilder constring = new SQLiteConnectionStringBuilder
             {
@@ -193,6 +193,10 @@ namespace sqlite_archive_cs
                 {
                     cmd.CommandText = "PRAGMA auto_vacuum = 1";
                     cmd.ExecuteNonQuery();
+                    if (verbose && GetAutoVacuum() == 1)
+                    {
+                        Console.WriteLine("AutoVacuum set to full.");
+                    }
                 }
             }
         }
