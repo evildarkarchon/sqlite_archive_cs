@@ -13,7 +13,7 @@ namespace sqlite_archive_cs
         public abstract void InsertFilesAtomic(string table, FileInfo fileinfo, bool replace, bool verbose, bool replacenovacuum);
         public abstract void InsertFilesAtomic(string table, List<string> files, bool replace, bool verbose, bool replacenovacuum);
     }
-    public class SQLiteConvenience : SQLiteActionAbstract
+    public class SQLiteAction : SQLiteActionAbstract
     {
         private readonly SQLiteConnection connection;
 
@@ -27,7 +27,7 @@ namespace sqlite_archive_cs
                 return int.Parse(cmd.ExecuteScalar().ToString());
             }
         }
-        public SQLiteConvenience(string filename, bool wal, int autovacuum, bool verbose)
+        public SQLiteAction(string filename, bool wal, int autovacuum, bool verbose)
         {
             SQLiteConnectionStringBuilder constring = new SQLiteConnectionStringBuilder
             {
@@ -110,7 +110,7 @@ namespace sqlite_archive_cs
             }
         }
 
-        public SQLiteConvenience(string filename, int autovacuum, bool verbose)
+        public SQLiteAction(string filename, int autovacuum, bool verbose)
         {
             SQLiteConnectionStringBuilder constring = new SQLiteConnectionStringBuilder
             {
@@ -176,7 +176,7 @@ namespace sqlite_archive_cs
             }
         }
 
-        public SQLiteConvenience(string filename, bool verbose)
+        public SQLiteAction(string filename, bool verbose)
         {
             SQLiteConnectionStringBuilder constring = new SQLiteConnectionStringBuilder
             {
